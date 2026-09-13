@@ -11,6 +11,12 @@ you can actually click through live, instead of only describing them on a slide.
   cargo hub, solar zone), a flight path vs. the current 100-minute road route
   to Trichy, and a marker on Brihadeeswarar Temple. Runs entirely offline
   except for the OpenStreetMap basemap tiles (no API key or account needed).
+  The default, primary experience is the **Guided Facility Tour** — a
+  scripted flight past every facility (runway, terminal, tower, cargo hub,
+  solar zone, transport hub) with a caption per stop, plus Play/Pause,
+  Next/Prev and Exit controls. The map/connectivity camera presets (fly-in,
+  orbit, compare-to-Trichy, temple) are kept as a secondary "Map &
+  Connectivity (optional)" panel underneath it.
 - **`webapp/`** — the passenger + airport-ops web portal:
   - `index.html` — landing page linking everything together
   - `passenger.html` — enter any booking reference, get a live-generated
@@ -63,9 +69,13 @@ exactly what you built:
 
 ## Suggested demo flow (~4–5 minutes)
 
-1. **Digital twin** — open it, let the site load, click "Compare: Thanjavur
-   vs Trichy" to show the distance/time framing, then "Orbit the Airport
-   Site" to show the massing model up close.
+1. **Digital twin** — open it, let the site load, click **"▶ Start Facility
+   Tour"** and let it run (or drive it with Next/Prev) as you narrate each
+   stop: runway → terminal → control tower → cargo hub → solar zone →
+   transport hub → regional connectivity. This is the main visual — lead
+   with it. The "Map & Connectivity" panel underneath (fly-in, orbit,
+   compare-to-Trichy, temple) is there if you want the geographic framing
+   too, but treat it as optional/secondary.
 2. **Passenger portal** — type any booking code, show the smart QR boarding
    pass, mention DigiYatra as the real-world precedent already live at major
    Indian airports.
@@ -87,3 +97,29 @@ regardless — so even in the unlikely case a tour button misbehaves, reloading
 the page or just using the mouse gets you back to a working view instantly.
 Test it once on the actual presentation laptop beforehand, as you would with
 any live demo.
+
+## Pushing this to GitHub
+
+This project folder is already a git repo with one commit (`git log` shows
+it). To get it onto GitHub:
+
+1. Go to [github.com/new](https://github.com/new) and create a new **empty**
+   repository (no README/license/gitignore — this folder already has its
+   own). Name it whatever you like, e.g. `thanjavur-smart-airport`.
+2. Copy the "…or push an existing repository from the command line" commands
+   GitHub shows you, or just run these from inside this folder (replace the
+   URL with the one GitHub gives you):
+
+   ```
+   git remote add origin https://github.com/<your-username>/thanjavur-smart-airport.git
+   git push -u origin main
+   ```
+
+3. If `git push` asks for a password, GitHub no longer accepts your account
+   password there — use a **personal access token** instead (Settings →
+   Developer settings → Personal access tokens), or push via GitHub Desktop
+   / VS Code's built-in git support if you have either installed, which
+   handles login for you.
+
+Everything (Cesium/Chart.js/QR-code libraries included, ~35 MB) is already
+committed, so those two commands are all that's needed.
