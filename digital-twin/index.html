@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thanjavur Smart Airport — Digital Twin</title>
+<link rel="stylesheet" href="vendor/cesium/Widgets/widgets.css" />
+<link rel="stylesheet" href="../shared/style.css" />
+<style>
+  html, body, #cesiumContainer { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background:#060a12; }
+  #cesiumContainer { position: absolute; top:0; left:0; }
+
+  .twin-topbar {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; background: linear-gradient(180deg, rgba(6,10,18,.92), rgba(6,10,18,0));
+    pointer-events: none;
+  }
+  .twin-topbar .brand { pointer-events: auto; }
+  .twin-topbar .brand .kicker { font-size: 11px; letter-spacing: .12em; color: var(--accent); text-transform: uppercase; font-weight: 700; }
+  .twin-topbar .brand h1 { margin: 2px 0 0; font-size: 18px; color: #fff; font-weight: 700; }
+  .twin-topbar nav { pointer-events: auto; display:flex; gap:8px; }
+
+  .twin-controls {
+    position: absolute; left: 20px; bottom: 24px; z-index: 20;
+    display:flex; flex-direction:column; gap:8px; width: 260px;
+  }
+  .twin-panel {
+    background: rgba(10,16,28,.94); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px; padding: 12px 14px;
+  }
+  .twin-panel h2 { margin:0 0 8px; font-size: 11px; letter-spacing:.08em; text-transform:uppercase; color: var(--text-muted); }
+  .twin-btn {
+    display:block; width:100%; text-align:left; background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08); color:#e7edf5; padding:8px 10px; margin-bottom:6px;
+    border-radius:8px; font-size:13px; cursor:pointer; transition:.15s;
+  }
+  .twin-btn:last-child{ margin-bottom:0; }
+  .twin-btn:hover { background: rgba(34,211,238,.12); border-color: rgba(34,211,238,.4); }
+  .twin-btn.active { background: rgba(34,211,238,.18); border-color: var(--accent); color:#fff; }
+
+  /* Guided tour panel + CTA */
+  .tour-panel { border-color: rgba(34,211,238,.35); }
+  .tour-cta {
+    margin-bottom:0; text-align:center; font-weight:700; font-size:14px;
+    background: linear-gradient(135deg, rgba(34,211,238,.22), rgba(124,156,255,.22));
+    border-color: rgba(34,211,238,.55); color:#fff; padding:11px 10px;
+  }
+  .tour-cta:hover { background: linear-gradient(135deg, rgba(34,211,238,.34), rgba(124,156,255,.34)); }
+  .tour-live-controls { display:flex; flex-direction:column; gap:10px; }
+  .tour-row { display:flex; gap:6px; }
+  .tour-mini-btn {
+    flex:1; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); color:#e7edf5;
+    padding:8px 0; border-radius:8px; font-size:14px; cursor:pointer; transition:.15s;
+  }
+  .tour-mini-btn:hover { background: rgba(34,211,238,.16); border-color: rgba(34,211,238,.45); }
+  .tour-mini-btn:disabled { opacity:.35; cursor:default; }
+  .tour-mini-btn:disabled:hover { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
+  .tour-progress { display:flex; gap:5px; justify-content:center; flex-wrap:wrap; }
+  .tour-dot { width:7px; height:7px; border-radius:50%; background: rgba(255,255,255,.16); transition:.2s; }
+  .tour-dot.done { background: rgba(34,211,238,.5); }
+  .tour-dot.active { background: var(--accent); box-shadow:0 0 6px var(--accent); }
+
+  .tour-caption {
+    position:absolute; top: 86px; left:50%; transform:translateX(-50%); z-index: 22;
+    width:min(560px, calc(100% - 40px)); text-align:center;
+    background: rgba(10,16,28,.92); border:1px solid rgba(34,211,238,.4);
+    border-radius:14px; padding:14px 22px; box-shadow: 0 8px 30px rgba(0,0,0,.35);
+  }
+  .tour-caption .tour-caption-eyebrow { font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color: var(--accent); font-weight:700; margin-bottom:4px; }
+  .tour-caption h3 { margin: 0 0 6px; font-size:17px; color:#fff; }
+  .tour-caption p { margin:0; font-size:13px; line-height:1.5; color:#dbe4ee; }
+
+  .twin-legend { position:absolute; right:20px; bottom:24px; z-index:20; width: 250px; }
+  .legend-row { display:flex; align-items:center; gap:8px; font-size:12.5px; color:#dbe4ee; margin:5px 0; }
+  .legend-swatch { width:12px; height:12px; border-radius:3px; flex:none; }
+
+  .twin-caption {
+    position:absolute; left:50%; transform:translateX(-50%); bottom:24px; z-index:20;
+    max-width:560px; text-align:center; font-size:12px; color: var(--text-muted);
+    background: rgba(10,16,28,.7); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:8px 14px;
+  }
+
+  .info-toast {
+    position:absolute; top: 78px; left:50%; transform:translateX(-50%); z-index: 25;
+    background: rgba(10,16,28,.92); border:1px solid rgba(34,211,238,.4); color:#fff;
+    padding:10px 18px; border-radius:10px; font-size:13px; max-width:640px; text-align:center;
+    opacity:0; pointer-events:none; transition:opacity .3s ease;
+  }
+  .info-toast.show { opacity:1; }
+
+  #loading {
+    position:absolute; inset:0; z-index:50; background:#060a12; color:#8ea3ba;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    font-size:13px; letter-spacing:.04em;
+  }
+  #loading .spinner { width:34px;height:34px;border-radius:50%; border:3px solid rgba(34,211,238,.2); border-top-color:#22d3ee; animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* keep OSM/Cesium attribution (required), just make it unobtrusive */
+  .cesium-viewer-bottom { opacity:.6; transform: scale(.82); transform-origin: bottom left; }
+  .cesium-viewer-bottom:hover { opacity:1; }
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div><div>Loading digital twin scene…</div></div>
+
+<div id="cesiumContainer"></div>
+
+<div class="twin-topbar">
+  <div class="brand">
+    <div class="kicker">Digital Twin · Conceptual Site Model</div>
+    <h1>Smart Development of Thanjavur Airport</h1>
+  </div>
+  <nav>
+    <a class="twin-btn" style="margin:0; width:auto; display:inline-block;" href="../webapp/index.html">Open Passenger &amp; Ops Portal →</a>
+  </nav>
+</div>
+
+<div class="tour-caption" id="tourCaption" hidden>
+  <div class="tour-caption-eyebrow" id="tourStopEyebrow">Stop 1 of 9</div>
+  <h3 id="tourStopTitle">Title</h3>
+  <p id="tourStopDesc">Description</p>
+</div>
+
+<div class="twin-controls">
+  <div class="twin-panel tour-panel">
+    <h2>🎬 Guided Facility Tour</h2>
+    <button class="twin-btn tour-cta" id="btn-tour-start">▶ Start Facility Tour</button>
+    <div class="tour-live-controls" id="tourLiveControls" hidden>
+      <div class="tour-row">
+        <button class="tour-mini-btn" id="btn-tour-prev" title="Previous stop">⏮</button>
+        <button class="tour-mini-btn" id="btn-tour-toggle" title="Pause">⏸</button>
+        <button class="tour-mini-btn" id="btn-tour-next" title="Next stop">⏭</button>
+        <button class="tour-mini-btn" id="btn-tour-exit" title="Exit tour">✕</button>
+      </div>
+      <div class="tour-progress" id="tourProgress"></div>
+    </div>
+  </div>
+  <div class="twin-panel">
+    <h2>🗺️ Map &amp; Connectivity <span style="opacity:.65; font-weight:400; text-transform:none;">(optional)</span></h2>
+    <div class="map-panel">
+      <button class="twin-btn" id="btn-intro">▶ Fly-in: India → Thanjavur</button>
+      <button class="twin-btn" id="btn-site">🛬 Orbit the Airport Site</button>
+      <button class="twin-btn" id="btn-compare">✈ Compare: Thanjavur vs Trichy</button>
+      <button class="twin-btn" id="btn-city">🛕 Fly to Brihadeeswarar Temple</button>
+    </div>
+  </div>
+  <div class="twin-panel">
+    <h2>Layers</h2>
+    <button class="twin-btn active" id="toggle-labels">✓ Facility Labels</button>
+    <button class="twin-btn active" id="toggle-routes">✓ Connectivity Routes</button>
+  </div>
+</div>
+
+<div class="twin-legend twin-panel">
+  <h2>Site Legend</h2>
+  <div class="legend-row"><span class="legend-swatch" style="background:#5b6b7d"></span>Runway &amp; apron (existing IAF asset)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#22d3ee"></span>Smart Passenger Terminal (Ph.2)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#7c9cff"></span>Control Tower — AI Ops (Ph.3)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#f7b955"></span>Smart Cargo &amp; Cold-chain Hub (Ph.5)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#34d399"></span>Solar Micro-grid Zone (Vision 2035)</div>
+  <div class="legend-row"><span class="legend-swatch" style="background:#f472b6"></span>Multimodal Transport Hub</div>
+</div>
+
+<div class="twin-caption">
+  Simplified massing model for illustration, positioned at the real airport coordinates — not an engineering blueprint. Basemap: OpenStreetMap.
+</div>
+
+<div class="info-toast" id="infoToast"></div>
+
+<script>window.CESIUM_BASE_URL = 'vendor/cesium';</script>
+<script src="vendor/cesium/Cesium.js"></script>
+<script src="site-config.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

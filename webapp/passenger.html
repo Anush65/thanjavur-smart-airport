@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Passenger Portal — Thanjavur Smart Airport</title>
+<link rel="stylesheet" href="../shared/style.css" />
+<style>
+  .wrap { padding: 40px 0 70px; display:grid; grid-template-columns: 380px 1fr; gap: 26px; align-items:start; }
+  @media (max-width: 860px) { .wrap { grid-template-columns: 1fr; } }
+
+  .lookup h2 { margin:0 0 6px; font-size:20px; }
+  .lookup p.sub { color:var(--text-muted); font-size:13px; margin:0 0 18px; }
+  .field { margin-bottom: 14px; }
+  .field label { display:block; font-size:12px; color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; }
+  .field input {
+    width:100%; background: var(--surface-3); border:1px solid var(--border); color:#fff;
+    padding: 12px 14px; border-radius:10px; font-size:14px; font-family: var(--font); letter-spacing:.03em;
+  }
+  .field input:focus { outline:none; border-color: var(--accent); }
+  .demo-codes { font-size:11.5px; color:var(--text-faint); margin-top:10px; }
+  .demo-codes button { background:none; border:none; color:var(--accent-2); cursor:pointer; font-size:11.5px; text-decoration:underline; padding:0; margin-right:10px; }
+
+  .boarding-pass {
+    display:grid; grid-template-columns: 1fr 190px; gap: 0; border-radius: 18px; overflow:hidden;
+    background: linear-gradient(160deg, var(--surface), var(--surface-2)); border:1px solid var(--border);
+  }
+  .bp-main { padding: 26px 26px 20px; }
+  .bp-route { display:flex; align-items:center; gap:16px; margin-bottom: 18px; }
+  .bp-route .code { font-size: 30px; font-weight:800; letter-spacing:-0.01em; }
+  .bp-route .arrow { color: var(--accent); font-size:20px; }
+  .bp-route .city { font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+  .bp-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top:6px; }
+  .bp-grid .k { font-size:10.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;}
+  .bp-grid .v { font-size:15px; font-weight:700; }
+  .bp-side {
+    background: rgba(0,0,0,.22); border-left: 2px dashed rgba(255,255,255,.15);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 18px; gap:10px;
+  }
+  .bp-side #qrcode { background:#fff; padding:8px; border-radius:10px; line-height:0; }
+  .bp-side .pnr { font-size: 11px; color: var(--text-muted); letter-spacing:.08em; }
+  .bp-side .smart-tag { font-size:10px; color: var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+
+  .timeline { margin-top: 22px; }
+  .timeline h3 { font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin: 0 0 14px; }
+  .steps { display:flex; gap: 6px; }
+  .step { flex:1; text-align:center; }
+  .step .bubble { width:30px; height:30px; margin:0 auto 8px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; border: 2px solid var(--border); color:var(--text-faint); background: var(--surface-3);}
+  .step.done .bubble { background: rgba(52,211,153,.18); border-color: var(--good); color: var(--good); }
+  .step.active .bubble { background: rgba(34,211,238,.18); border-color: var(--accent); color: var(--accent); animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(34,211,238,.4);} 50%{ box-shadow: 0 0 0 6px rgba(34,211,238,0);} }
+  .step .lbl { font-size: 10.5px; color: var(--text-muted); }
+  .bar-track { height:3px; background:var(--border); position:relative; margin: -23px 0 0; z-index:-1; }
+
+  .note { margin-top:18px; font-size:12px; color:var(--text-faint); line-height:1.6; }
+  .empty { padding: 60px 20px; text-align:center; color: var(--text-muted); border:1px dashed var(--border); border-radius:16px; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="bar">
+    <div class="brand"><span class="dot"></span>
+      <div class="name">Smart Thanjavur Airport<small>Design of Smart Cities · Demo</small></div>
+    </div>
+    <div class="links">
+      <a class="navlink" href="index.html">Home</a>
+      <a class="navlink active" href="passenger.html">Passenger</a>
+      <a class="navlink" href="ops.html">Airport Ops</a>
+      <a class="navlink" href="../digital-twin/index.html">Digital Twin ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="wrap">
+    <div class="lookup card">
+      <h2>Find your flight</h2>
+      <p class="sub">Enter any booking reference — the portal simulates a live PNR lookup against the airport's passenger system.</p>
+      <div class="field">
+        <label>Booking Reference (PNR)</label>
+        <input id="pnrInput" placeholder="e.g. THJ4521" maxlength="10" autocomplete="off" />
+      </div>
+      <button class="btn" id="lookupBtn" style="width:100%; justify-content:center;">View Boarding Pass</button>
+      <div class="demo-codes">
+        Try: <button data-pnr="THJ4521">THJ4521</button><button data-pnr="TJVX09">TJVX09</button><button data-pnr="SKY773">SKY773</button>
+      </div>
+      <div class="note">
+        Smart QR replaces the printed ticket entirely — the same shift already live at several Indian airports via
+        DigiYatra facial + QR e-boarding. Here it doubles as the token IoT gates/kiosks would scan at each checkpoint.
+      </div>
+    </div>
+
+    <div id="result">
+      <div class="empty">Enter a booking reference to generate your smart boarding pass.</div>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/qrcode.js"></script>
+<script src="vendor/qrcode_utf8.js"></script>
+<script src="passenger.js"></script>
+</body>
+</html>

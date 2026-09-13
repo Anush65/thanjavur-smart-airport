@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Airport Operations — Thanjavur Smart Airport</title>
+<link rel="stylesheet" href="../shared/style.css" />
+<style>
+  .dash { padding: 28px 0 70px; }
+  .dash-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 18px; flex-wrap:wrap; gap:10px;}
+  .dash-head h1 { font-size: 19px; margin:0; }
+  .live-badge { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; color: var(--good); font-weight:700; }
+  .live-dot { width:7px; height:7px; border-radius:50%; background: var(--good); box-shadow:0 0 8px var(--good); animation: blink 1.6s infinite; }
+  @keyframes blink { 50% { opacity:.3; } }
+
+  .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .g-4 { grid-column: span 4; } .g-6 { grid-column: span 6; } .g-8 { grid-column: span 8; } .g-12 { grid-column: span 12; }
+  @media (max-width: 980px) { .g-4, .g-6, .g-8 { grid-column: span 12; } }
+
+  .card h2 { font-size: 13px; text-transform:uppercase; letter-spacing:.06em; color: var(--text-muted); margin: 0 0 14px; display:flex; justify-content:space-between; align-items:center;}
+  .card h2 .tag { font-size:10.5px; color:var(--text-faint); text-transform:none; letter-spacing:0; }
+
+  .gauge-wrap { display:flex; flex-direction:column; align-items:center; }
+  .gauge-num { font-size: 34px; font-weight:800; margin-top:-58px; }
+  .gauge-lbl { font-size:11.5px; color:var(--text-muted); margin-top: 2px; }
+
+  table.flightboard { width:100%; border-collapse:collapse; font-size:13px; }
+  table.flightboard th { text-align:left; font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  table.flightboard td { padding: 10px 6px; border-bottom: 1px solid rgba(255,255,255,.05); }
+  table.flightboard tr:last-child td { border-bottom:none; }
+
+  .alert-item { display:flex; align-items:flex-start; gap:10px; padding: 11px 0; border-bottom:1px solid rgba(255,255,255,.05); transition: background .4s; }
+  .alert-item:last-child { border-bottom:none; }
+  .alert-item .ic { width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex:none; font-size:14px; }
+  .alert-item .body .name { font-size:13.5px; font-weight:600; }
+  .alert-item .body .msg { font-size:12px; color: var(--text-muted); margin-top:2px; }
+  .alert-item.flash { background: rgba(247,185,85,.08); }
+
+  .cargo-item { padding: 12px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+  .cargo-item:last-child { border-bottom:none; }
+  .cargo-top { display:flex; justify-content:space-between; font-size:13px; margin-bottom:8px; }
+  .cargo-top .id { color: var(--text-muted); font-size:11.5px; }
+  .progress-track { height:6px; border-radius:3px; background: var(--surface-3); overflow:hidden; }
+  .progress-fill { height:100%; border-radius:3px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 1s ease; }
+  .stage-labels { display:flex; justify-content:space-between; font-size:10px; color:var(--text-faint); margin-top:5px; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="bar">
+    <div class="brand"><span class="dot"></span>
+      <div class="name">Smart Thanjavur Airport<small>Design of Smart Cities · Demo</small></div>
+    </div>
+    <div class="links">
+      <a class="navlink" href="index.html">Home</a>
+      <a class="navlink" href="passenger.html">Passenger</a>
+      <a class="navlink active" href="ops.html">Airport Ops</a>
+      <a class="navlink" href="../digital-twin/index.html">Digital Twin ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="container dash">
+  <div class="dash-head">
+    <h1>Airport Operations — Staff View</h1>
+    <div class="live-badge"><span class="live-dot"></span>LIVE (simulated IoT + AI feed)</div>
+  </div>
+
+  <div class="grid">
+    <div class="card g-4">
+      <h2>Terminal Occupancy</h2>
+      <div class="gauge-wrap">
+        <canvas id="gaugeChart" width="220" height="130"></canvas>
+        <div class="gauge-num" id="gaugeNum">—</div>
+        <div class="gauge-lbl">of 300/day capacity, current wave</div>
+      </div>
+    </div>
+
+    <div class="card g-4">
+      <h2>Energy Usage <span class="tag">AI-optimized microgrid</span></h2>
+      <canvas id="energyChart" height="150"></canvas>
+    </div>
+
+    <div class="card g-4">
+      <h2>Predictive Maintenance <span class="tag">AI risk scoring</span></h2>
+      <div id="alerts"></div>
+    </div>
+
+    <div class="card g-7" style="grid-column: span 7;">
+      <h2>Flight Board</h2>
+      <table class="flightboard">
+        <thead><tr><th>Flight</th><th>Route</th><th>Time</th><th>Gate</th><th>Status</th></tr></thead>
+        <tbody id="flightRows"></tbody>
+      </table>
+    </div>
+
+    <div class="card" style="grid-column: span 5;">
+      <h2>Smart Cargo &amp; Cold-Chain Tracking <span class="tag">RFID</span></h2>
+      <div id="cargoList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/chart.umd.min.js"></script>
+<script src="ops.js"></script>
+</body>
+</html>

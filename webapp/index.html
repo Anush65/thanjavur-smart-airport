@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thanjavur Smart Airport — Portal</title>
+<link rel="stylesheet" href="../shared/style.css" />
+<style>
+  .hero { padding: 72px 0 40px; text-align:center; }
+  .hero h1 { font-size: clamp(28px, 4vw, 44px); margin: 14px 0 12px; letter-spacing:-0.01em; }
+  .hero p { color: var(--text-muted); max-width: 640px; margin: 0 auto; font-size: 15px; line-height:1.6; }
+
+  .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 30px 0 70px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+  .tile {
+    display:block; padding: 26px; border-radius: 16px;
+    background: linear-gradient(165deg, var(--surface), var(--surface-2));
+    border: 1px solid var(--border); transition: transform .18s ease, border-color .18s ease;
+    position: relative; overflow: hidden;
+  }
+  .tile:hover { transform: translateY(-4px); border-color: rgba(34,211,238,.4); }
+  .tile .glow { position:absolute; width:180px; height:180px; border-radius:50%; filter:blur(50px); opacity:.25; top:-60px; right:-60px; }
+  .tile .emoji { font-size: 30px; }
+  .tile h3 { margin: 14px 0 8px; font-size: 17px; }
+  .tile p { color: var(--text-muted); font-size: 13.5px; line-height:1.55; margin:0 0 16px; }
+  .tile .go { font-size:12.5px; font-weight:700; color: var(--accent); }
+
+  .stripe { border-top:1px solid var(--border); padding: 30px 0 60px; }
+  .stripe .row { display:flex; gap:40px; flex-wrap:wrap; justify-content:center; text-align:center; }
+  .stat { min-width:140px; }
+  .stat .num { font-size:26px; font-weight:800; color:#fff; }
+  .stat .lbl { font-size:11.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-top:4px; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="bar">
+    <div class="brand">
+      <span class="dot"></span>
+      <div class="name">Smart Thanjavur Airport<small>Design of Smart Cities · Demo</small></div>
+    </div>
+    <div class="links">
+      <a class="navlink active" href="index.html">Home</a>
+      <a class="navlink" href="passenger.html">Passenger</a>
+      <a class="navlink" href="ops.html">Airport Ops</a>
+      <a class="navlink" href="../digital-twin/index.html">Digital Twin ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="hero">
+    <div class="kicker">Live Prototype</div>
+    <h1>Smart Development of Thanjavur Airport</h1>
+    <p>A working proof-of-concept for three pieces of the proposed framework: a geospatial digital twin of the site,
+      a passenger experience built around a smart QR boarding pass, and a live airport operations dashboard
+      driven by simulated IoT + AI signals.</p>
+  </div>
+
+  <div class="grid">
+    <a class="tile" href="../digital-twin/index.html">
+      <div class="glow" style="background:#22d3ee;"></div>
+      <div class="emoji">🌐</div>
+      <h3>Digital Twin — 3D Site Model</h3>
+      <p>Real Thanjavur coordinates, a simplified massing model of the terminal / tower / cargo hub / solar zone,
+        and a live comparison against the 100-minute Trichy dependency.</p>
+      <div class="go">Open the digital twin →</div>
+    </a>
+    <a class="tile" href="passenger.html">
+      <div class="glow" style="background:#7c9cff;"></div>
+      <div class="emoji">🧳</div>
+      <h3>Passenger Portal</h3>
+      <p>Look up a mock booking, see your flight details, and get a live-generated smart QR boarding pass —
+        no physical ticket, in the spirit of DigiYatra e-boarding.</p>
+      <div class="go">Open passenger portal →</div>
+    </a>
+    <a class="tile" href="ops.html">
+      <div class="glow" style="background:#f7b955;"></div>
+      <div class="emoji">🛰️</div>
+      <h3>Airport Operations Dashboard</h3>
+      <p>Flight board, terminal occupancy, energy usage, predictive-maintenance alerts and RFID cargo tracking —
+        simulated live signals for the staff-facing view.</p>
+      <div class="go">Open ops dashboard →</div>
+    </a>
+  </div>
+
+  <div class="stripe">
+    <div class="row">
+      <div class="stat"><div class="num">300+</div><div class="lbl">Passengers / day (Ph.1 terminal)</div></div>
+      <div class="stat"><div class="num">500+</div><div class="lbl">Direct jobs projected</div></div>
+      <div class="stat"><div class="num">40%</div><div class="lbl">Export time reduction target</div></div>
+      <div class="stat"><div class="num">30%</div><div class="lbl">Energy optimization target</div></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
