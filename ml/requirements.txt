@@ -1,0 +1,157 @@
+import json
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
+
+
+base_dir = Path(__file__).resolve().parent
+
+def generate_dataset(n_samples: int = 1200) -> pd.DataFrame:
+    rng = np.random.default_rng(42)
+
+    temperature = rng.normal(loc=72, scale=8, size=n_samples)
+    vibration = rng.normal(loc=3.4, scale=1.2, size=n_samples)
+    pressure = rng.normal(loc=180, scale=28, size=n_samples)
+    humidity = rng.normal(loc=47, scale=14, size=n_samples)
+    load_ratio = rng.normal(loc=64, scale=18, size=n_samples)
+    runtime_hours = rng.uniform(low=150, high=12000, size=n_samples)
+    oil_quality = rng.uniform(low=35, high=100, size=n_samples)
+    energy_kwh = rng.normal(loc=820, scale=160, size=n_samples)
+
+    # Create a realistic risk score that increases when equipment is hot, noisy,
+    # overloaded, and poorly maintained.
+    risk_score = (
+        0.04 * ((temperature - 72) / 8)
+        + 0.20 * ((vibration - 3.4) / 1.2)
+        + 0.06 * ((pressure - 180) / 28)
+        + 0.05 * ((humidity - 47) / 14)
+        + 0.09 * ((load_ratio - 64) / 18)
+        + 0.08 * ((12000 - runtime_hours) / 11850)
+        + 0.15 * ((100 - oil_quality) / 65)
+        + 0.06 * ((energy_kwh - 820) / 160)
+    )
+
+    logistic_risk = 1 / (1 + np.exp(-risk_score))
+    maintenance_required = rng.binomial(1, logistic_risk)
+
+    # Ensure enough maintenance events to keep the model meaningful.
+    maintenance_required = np.where(
+        maintenance_required == 1,
+        1,
+        np.where((risk_score > 0.62) & (rng.random(n_samples) > 0.35), 1, 0),
+    )
+
+    # Clamp values into realistic ranges.
+    temperature = np.clip(temperature, 35, 110)
+    vibration = np.clip(vibration, 0.5, 8.5)
+    pressure = np.clip(pressure, 90, 260)
+    humidity = np.clip(humidity, 15, 95)
+    load_ratio = np.clip(load_ratio, 15, 100)
+    runtime_hours = np.clip(runtime_hours, 0, 12000)
+    oil_quality = np.clip(oil_quality, 0, 100)
+    energy_kwh = np.clip(energy_kwh, 200, 1600)
+
+    data = pd.DataFrame(
+        {
+            "temperature_c": temperature,
+            "vibration_mm_s": vibration,
+            "pressure_bar": pressure,
+            "humidity_pct": humidity,
+            "load_pct": load_ratio,
+            "runtime_hours": runtime_hours,
+            "oil_quality_pct": oil_quality,
+            "energy_kwh": energy_kwh,
+            "maintenance_required": maintenance_required.astype(int),
+        }
+    )
+
+    return data
+
+
+def train_model(data: pd.DataFrame):
+    features = [
+        "temperature_c",
+        "vibration_mm_s",
+        "pressure_bar",
+        "humidity_pct",
+        "load_pct",
+        "runtime_hours",
+        "oil_quality_pct",
+        "energy_kwh",
+    ]
+    X = data[features]
+    y = data["maintenance_required"]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.25, random_state=42, stratify=y
+    )
+
+    model = RandomForestClassifier(
+        n_estimators=250,
+        random_state=42,
+        max_depth=8,
+        min_samples_leaf=2,
+        class_weight="balanced",
+    )
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    report = classification_report(y_test, y_pred, output_dict=True)
+    matrix = confusion_matrix(y_test, y_pred)
+
+    feature_importance = {
+        feature: round(float(score), 4)
+        for feature, score in zip(features, model.feature_importances_)
+    }
+    feature_importance = dict(
+        sorted(feature_importance.items(), key=lambda item: item[1], reverse=True)
+    )
+
+    return {
+        "model": model,
+        "accuracy": accuracy,
+        "report": report,
+        "confusion_matrix": matrix.tolist(),
+        "feature_importance": feature_importance,
+    }
+
+
+def save_outputs(data: pd.DataFrame, metrics: dict):
+    dataset_path = base_dir / "maintenance_dataset.csv"
+    summary_path = base_dir / "maintenance_model_summary.json"
+
+    data.to_csv(dataset_path, index=False)
+
+    summary = {
+        "rows": len(data),
+        "columns": list(data.columns),
+        "maintenance_positive_ratio": round(float(data["maintenance_required"].mean()), 4),
+        "train_test_split": "75/25 stratified",
+        "accuracy": round(float(metrics["accuracy"]), 4),
+        "classification_report": metrics["report"],
+        "confusion_matrix": metrics["confusion_matrix"],
+        "feature_importance": metrics["feature_importance"],
+    }
+
+    summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    print(f"Saved dataset to: {dataset_path}")
+    print(f"Saved metrics to: {summary_path}")
+    print(f"Accuracy: {metrics['accuracy']:.4f}")
+    print("Top feature importance:")
+    for feature, importance in list(metrics["feature_importance"].items())[:5]:
+        print(f"  - {feature}: {importance}")
+
+
+def main():
+    data = generate_dataset(1200)
+    metrics = train_model(data)
+    save_outputs(data, metrics)
+
+
+if __name__ == "__main__":
+    main()
