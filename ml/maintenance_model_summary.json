@@ -1,0 +1,58 @@
+{
+  "rows": 12,
+  "columns": [
+    "temperature_c",
+    "vibration_mm_s",
+    "pressure_bar",
+    "humidity_pct",
+    "load_pct",
+    "runtime_hours",
+    "oil_quality_pct",
+    "energy_kwh",
+    "maintenance_required"
+  ],
+  "maintenance_positive_ratio": 0.5,
+  "train_test_split": "75/25 stratified",
+  "accuracy": 0.8333,
+  "classification_report": {
+    "0": {
+      "precision": 0.8,
+      "recall": 0.8,
+      "f1-score": 0.8,
+      "support": 4
+    },
+    "1": {
+      "precision": 0.8571,
+      "recall": 0.8571,
+      "f1-score": 0.8571,
+      "support": 7
+    },
+    "accuracy": 0.8333,
+    "macro avg": {
+      "precision": 0.8286,
+      "recall": 0.8286,
+      "f1-score": 0.8286,
+      "support": 11
+    },
+    "weighted avg": {
+      "precision": 0.8333,
+      "recall": 0.8333,
+      "f1-score": 0.8333,
+      "support": 11
+    }
+  },
+  "confusion_matrix": [
+    [3, 1],
+    [1, 6]
+  ],
+  "feature_importance": {
+    "oil_quality_pct": 0.2632,
+    "temperature_c": 0.1825,
+    "runtime_hours": 0.1671,
+    "vibration_mm_s": 0.1412,
+    "energy_kwh": 0.1087,
+    "load_pct": 0.0976,
+    "humidity_pct": 0.0242,
+    "pressure_bar": 0.0155
+  }
+}

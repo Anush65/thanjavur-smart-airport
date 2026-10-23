@@ -1,6 +1,6 @@
-﻿# Thanjavur Smart Airport Demo
+# Thanjavur Smart Airport Demo
 
-This project is a lightweight interactive prototype for a smart airport concept centered on Thanjavur. It combines a 3D airport digital twin, a passenger experience, and an operations dashboard with simulated IoT and AI monitoring.
+This project is a lightweight interactive prototype for a smart airport concept centered on Thanjavur. It combines a 3D airport digital twin, a passenger experience, and an operations dashboard with synthetic demo data.
 
 ## What the project does
 
@@ -19,9 +19,9 @@ This project is a lightweight interactive prototype for a smart airport concept 
   - Shows how AI and IoT-informed airport operations could work in a future smart airport
 
 - Machine learning module
-  - Generates 1,200 synthetic sensor readings for airport equipment
+  - Generates synthetic sensor readings for airport equipment
   - Trains a Random Forest predictive-maintenance classifier
-  - Uses the model to estimate whether maintenance is required before failure occurs
+  - Saves the generated dataset and evaluation summary
 
 This is a front-end demo built with plain HTML, CSS, and JavaScript. The required libraries are included locally, so there is no build step or package installation required.
 
@@ -32,22 +32,26 @@ This is a front-end demo built with plain HTML, CSS, and JavaScript. The require
 - `ml/` — synthetic predictive-maintenance data and Random Forest model training script
 - `shared/style.css` — shared styling for the web pages
 
-## How to run it
+## Run the web app
 
-From the project root, start a local web server:
+From the project root:
+
+```bash
+python3 serve_project.py --port 8000
+```
+
+Then open:
+
+- http://127.0.0.1:8000/webapp/index.html
+
+Alternative static server:
 
 ```bash
 cd thanjavavur-smart-airport
 python3 -m http.server 8000
 ```
 
-Then open the following in your browser:
-
-- http://localhost:8000/webapp/index.html
-
-This landing page links to the passenger portal, airport operations dashboard, and digital twin.
-
-### Machine learning workflow
+## Run the machine learning flow
 
 ```bash
 cd ml
@@ -57,9 +61,10 @@ pip install -r requirements.txt
 python predictive_maintenance.py
 ```
 
-The script creates a synthetic dataset with 1,200 records, trains a Random Forest model, and writes the evaluation summary to `ml/maintenance_model_summary.json`.
+The script creates a synthetic dataset with 1,200 records, trains a Random Forest model, and writes:
 
-If Python is not available, any static file server will work as long as it serves the project folder. For example, you can also use a VS Code Live Server or a simple `npx serve` setup.
+- `ml/maintenance_dataset.csv`
+- `ml/maintenance_model_summary.json`
 
 ## Notes
 
